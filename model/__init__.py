@@ -18,7 +18,7 @@ if not os.path.exists(db_path):
 db_url = 'sqlite:///%s/db_tarefa.sqlite3' % db_path
 
 # cria a engine de conexão com o banco
-engine = create_engine(db_url, echo=False)
+engine = create_engine(db_url, connect_args={"check_same_thread": False}, echo=False)
 
 # Ativa foreign key constraint para SQLite
 @event.listens_for(engine, "connect")

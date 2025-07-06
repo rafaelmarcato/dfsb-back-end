@@ -6,7 +6,6 @@ from datetime import datetime, timezone
 from sqlalchemy.exc import IntegrityError
 
 from model import Session, Tarefa, Anotacao
-from logger import logger
 from schemas import *
 from flask_cors import CORS
 
@@ -37,23 +36,19 @@ def add_tarefa(form: TarefaSchema):
     tarefa = Tarefa(
         nome=form.nome,
         descricao=form.descricao)
-    
-    logger.debug(f"Adicionanda terefa de nome: '{tarefa.nome}'")
     try:
         # criando conexão com a base
         session = Session()
-        # adicionanda terefa
+        # adicionanda tarefa
         session.add(tarefa)
         
         # efetivando o camando de adição de uma nova tarefa na tabela
         session.commit()
-        logger.debug(f"Adicionada tarefa de nome: '{tarefa.nome}'")
         return apresenta_tarefa(tarefa), 200
     
     except Exception as e:
         # caso um erro fora do previsto
         error_msg = "Não foi possível salvar a nova tarefa :/"
-        logger.warning(f"Erro ao adicionar tarefa '{tarefa.nome}', {error_msg}")
         return {"mesage": error_msg}, 400
     
 
@@ -64,7 +59,6 @@ def get_tarefas():
 
     Retorna uma representação da listagem de tarefas.
     """
-    logger.debug(f"Coletanda terefas ")
     # criando conexão com a base
     session = Session()
     # fazendo a busca
@@ -74,7 +68,6 @@ def get_tarefas():
         # se não há tarefas cadastradas
         return {"tarefas": []}, 200
     else:
-        logger.debug(f"%d tarefas econtradas" % len(tarefas))
         # retorna a representação da tarefa
         print(tarefas)
         return apresenta_tarefas(tarefas), 200
@@ -83,12 +76,11 @@ def get_tarefas():
 @app.get('/tarefa', tags=[tarefa_tag],
          responses={"200": TarefaViewSchema, "404": ErrorSchema})
 def get_tarefa(query: TarefaBuscaSchema):
-    """Faz a busca por uma tarefa a partir do id da terefa
+    """Faz a busca por uma tarefa a partir do id da tarefa
 
     Retorna uma representação das tarefas e anotações associadas.
     """
     tarefa_id = query.id
-    logger.debug(f"Coletando dados sobre tarefa #{tarefa_id}")
     # criando conexão com a base
     session = Session()
     # fazendo a busca
@@ -97,10 +89,8 @@ def get_tarefa(query: TarefaBuscaSchema):
     if not tarefa:
         # se a tarefa não foi encontrada
         error_msg = "Tarefa não encontrada na base :/"
-        logger.warning(f"Erro ao buscar a tarefa '{tarefa_id}', {error_msg}")
         return {"mesage": error_msg}, 404
     else:
-        logger.debug(f"Tarefa econtrada: '{tarefa.nome}'")
         # retorna a representação de tarefa
         return apresenta_tarefa(tarefa), 200
 
@@ -108,13 +98,12 @@ def get_tarefa(query: TarefaBuscaSchema):
 @app.put('/tarefa/<int:id>', tags=[tarefa_tag],
          responses={"200": TarefaViewSchema, "404": ErrorSchema})
 def atualiza_tarefa(path: TarefaPathAtualizaSchema, form: TarefaAtualizaSchema):
-    """Atualiza uma Tarefa a partir do id da terefa
+    """Atualiza uma Tarefa a partir do id da tarefa
 
     Retorna uma representação das tarefas e anotações associadas.
     """
 
     tarefa_id = path.id
-    logger.debug(f"Atualizanda terefa com id: {id}")
 
     # criando conexão com a base
     session = Session()
@@ -124,7 +113,6 @@ def atualiza_tarefa(path: TarefaPathAtualizaSchema, form: TarefaAtualizaSchema):
     if not tarefa:
         # se o tarefa não foi encontrado
         error_msg = "Tarefa não encontrada na base :/"
-        logger.warning(f"Erro ao buscar a tarefa '{tarefa_id}', {error_msg}")
         return {"mesage": error_msg}, 404
     else:
 
@@ -148,12 +136,10 @@ def atualiza_tarefa(path: TarefaPathAtualizaSchema, form: TarefaAtualizaSchema):
             tarefa.status = form.status
 
             session.commit()
-            logger.debug(f"Tarefa com id {tarefa_id} atualizada com sucesso.")
             return apresenta_tarefa(tarefa), 200
 
         except Exception as e:
             error_msg = "Não foi possível atualizar a tarefa :/"
-            logger.warning(f"Erro ao atualizar tarefa de id {tarefa_id}: {e}")
             return {"message": error_msg}, 400
     
 
@@ -166,7 +152,6 @@ def del_tarefa(query: TarefaBuscaSchema):
     """
     tarefa_id = query.id
     print(tarefa_id)
-    logger.debug(f"Deletando dados sobre tarefa #{tarefa_id}")
     # criando conexão com a base
     session = Session()
     # fazendo a remoção
@@ -175,12 +160,10 @@ def del_tarefa(query: TarefaBuscaSchema):
 
     if count:
         # retorna a representação da mensagem de confirmação
-        logger.debug(f"Deletada terefa #{tarefa_id}")
         return {"mesage": "Tarefa removida", "id": tarefa_id}
     else:
         # se a tarefa não foi encontrada
         error_msg = "Tarefa não encontrada na base :/"
-        logger.warning(f"Erro ao deletar a tarefa #'{tarefa_id}', {error_msg}")
         return {"mesage": error_msg}, 404
 
 
@@ -192,7 +175,6 @@ def add_anotacao(form: AnotacaoSchema):
     Retorna uma representação das tarefas e anotações associadas.
     """
     tarefa_id  = form.tarefa_id
-    logger.debug(f"Adicionando anotações a tarefa #{tarefa_id}")
     # criando conexão com a base
     session = Session()
     # fazendo a busca pelo tarefa
@@ -201,7 +183,6 @@ def add_anotacao(form: AnotacaoSchema):
     if not tarefa:
         # se tarefa não encontrada
         error_msg = "Tarefa não encontrada na base :/"
-        logger.warning(f"Erro ao adicionar anotação na tarefa '{tarefa_id}', {error_msg}")
         return {"mesage": error_msg}, 404
 
     # criando o anotação
@@ -211,8 +192,6 @@ def add_anotacao(form: AnotacaoSchema):
     # adicionando o anotação a tarefa
     tarefa.adiciona_anotacao(anotacao)
     session.commit()
-
-    logger.debug(f"Adicionado a anotação na tarefa #{tarefa_id}")
 
     # retorna a representação de tarefa
     return apresenta_tarefa(tarefa), 200

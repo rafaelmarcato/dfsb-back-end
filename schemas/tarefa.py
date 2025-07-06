@@ -27,7 +27,7 @@ class TarefaPathAtualizaSchema(BaseModel):
 
 class TarefaBuscaSchema(BaseModel):
     """ Define como deve ser a estrutura que representa a busca. Que será
-        feita apenas com base no nome da terefa.
+        feita apenas com base no nome da tarefa.
     """
     id: int = 1
 
@@ -39,7 +39,7 @@ class ListagemTarefasSchema(BaseModel):
 
 
 def apresenta_tarefas(tarefas: List[Tarefa]):
-    """ Retorna uma representação da terefa seguindo o schema definido em
+    """ Retorna uma representação da tarefa seguindo o schema definido em
         TarefaViewSchema.
     """
     result = []
